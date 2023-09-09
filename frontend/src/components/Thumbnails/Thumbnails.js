@@ -35,7 +35,7 @@ export default function Thumbnails({ books }) {
                 </div>
                 <div className={classes.read_time}>
                   <span>🕒</span>
-                  {book.cookTime}
+                  {book.readTime}
                 </div>
               </div>
               <div className={classes.price}>

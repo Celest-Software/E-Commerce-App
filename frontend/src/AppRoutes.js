@@ -11,6 +11,10 @@ import PaymentPage from './pages/Payment/PaymentPage';
 import OrderTrackPage from './pages/OrderTrack/OrderTrackPage';
 import ProfilePage from './pages/Profile/ProfilePage';
 
+import { sample_books } from './data';
+ const getAll = async () => sample_books;
+
+ /*
 export default function AppRoutes() {
   return (
     <Routes>
@@ -56,3 +60,4 @@ export default function AppRoutes() {
     </Routes>
   );
 }
+*/
