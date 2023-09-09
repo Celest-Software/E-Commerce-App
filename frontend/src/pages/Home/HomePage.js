@@ -11,12 +11,12 @@ import {
 } from '../../services/bookService';
 import NotFound from '../../components/NotFound/NotFound';
 
-const initialState = { foods: [], tags: [] };
+const initialState = { books: [], tags: [] };
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case 'FOODS_LOADED':
-      return { ...state, foods: action.payload };
+    case 'BOOKS_LOADED':
+      return { ...state, books: action.payload };
     case 'TAGS_LOADED':
       return { ...state, tags: action.payload };
     default:
@@ -26,27 +26,27 @@ const reducer = (state, action) => {
 
 export default function HomePage() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { foods, tags } = state;
+  const { books, tags } = state;
   const { searchTerm, tag } = useParams();
 
   useEffect(() => {
     getAllTags().then(tags => dispatch({ type: 'TAGS_LOADED', payload: tags }));
 
-    const loadFoods = tag
+    const loadBooks = tag
       ? getAllByTag(tag)
       : searchTerm
       ? search(searchTerm)
       : getAll();
 
-    loadFoods.then(foods => dispatch({ type: 'FOODS_LOADED', payload: foods }));
+    loadBooks.then(books => dispatch({ type: 'BOOKS_LOADED', payload: books }));
   }, [searchTerm, tag]);
 
   return (
     <>
       <Search />
       <Tags tags={tags} />
-      {foods.length === 0 && <NotFound linkText="Reset Search" />}
-      <Thumbnails foods={foods} />
+      {books.length === 0 && <NotFound linkText="Reset Search" />}
+      <Thumbnails books={books} />
     </>
   );
 }

@@ -17,12 +17,12 @@ export default function CartPage() {
         <div className={classes.container}>
           <ul className={classes.list}>
             {cart.items.map(item => (
-              <li key={item.food.id}>
+              <li key={item.book.id}>
                 <div>
-                  <img src={`${item.food.imageUrl}`} alt={item.food.name} />
+                  <img src={`${item.book.imageUrl}`} alt={item.book.name} />
                 </div>
                 <div>
-                  <Link to={`/food/${item.food.id}`}>{item.food.name}</Link>
+                  <Link to={`/book/${item.book.id}`}>{item.book.name}</Link>
                 </div>
 
                 <div>
@@ -50,7 +50,7 @@ export default function CartPage() {
                 <div>
                   <button
                     className={classes.remove_button}
-                    onClick={() => removeFromCart(item.food.id)}
+                    onClick={() => removeFromCart(item.book.id)}
                   >
                     Remove
                   </button>
@@ -61,7 +61,7 @@ export default function CartPage() {
 
           <div className={classes.checkout}>
             <div>
-              <div className={classes.foods_count}>{cart.totalCount}</div>
+              <div className={classes.books_count}>{cart.totalCount}</div>
               <div className={classes.total_price}>
                 <Price price={cart.totalPrice} />
               </div>

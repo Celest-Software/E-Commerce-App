@@ -5,72 +5,72 @@ import StarRating from '../../components/StarRating/StarRating';
 import Tags from '../../components/Tags/Tags';
 import { useCart } from '../../hooks/useCart';
 import { getById } from '../../services/bookService';
-import classes from './foodPage.module.css';
+import classes from './bookPage.module.css';
 import NotFound from '../../components/NotFound/NotFound';
-export default function FoodPage() {
-  const [food, setFood] = useState({});
+export default function BookPage() {
+  const [book, setBook] = useState({});
   const { id } = useParams();
   const { addToCart } = useCart();
   const navigate = useNavigate();
 
   const handleAddToCart = () => {
-    addToCart(food);
+    addToCart(book);
     navigate('/cart');
   };
 
   useEffect(() => {
-    getById(id).then(setFood);
+    getById(id).then(setBook);
   }, [id]);
   return (
     <>
-      {!food ? (
-        <NotFound message="Food Not Found!" linkText="Back To Homepage" />
+      {!book ? (
+        <NotFound message="Book Not Found!" linkText="Back To Homepage" />
       ) : (
         <div className={classes.container}>
           <img
             className={classes.image}
-            src={`${food.imageUrl}`}
-            alt={food.name}
+            src={`${book.imageUrl}`}
+            alt={book.name}
           />
 
           <div className={classes.details}>
             <div className={classes.header}>
-              <span className={classes.name}>{food.name}</span>
+              <span className={classes.name}>{book.name}</span>
               <span
                 className={`${classes.favorite} ${
-                  food.favorite ? '' : classes.not
+                  book.favorite ? '' : classes.not
                 }`}
               >
                 ❤
               </span>
             </div>
             <div className={classes.rating}>
-              <StarRating stars={food.stars} size={25} />
+              <StarRating stars={book.stars} size={25} />
             </div>
 
             <div className={classes.origins}>
-              {food.origins?.map(origin => (
+              {book.origins?.map(origin => (
                 <span key={origin}>{origin}</span>
               ))}
             </div>
 
             <div className={classes.tags}>
-              {food.tags && (
+              {book.tags && (
                 <Tags
-                  tags={food.tags.map(tag => ({ name: tag }))}
-                  forFoodPage={true}
+                  tags={book.tags.map(tag => ({ name: tag }))}
+                  forBookPage={true}
                 />
               )}
             </div>
 
             <div className={classes.cook_time}>
               <span>
-                Time to cook about <strong>{food.cookTime}</strong> minutes
+                Time to cook about <strong>{book.cookTime}</strong> minutes
               </span>
             </div>
 
             <div className={classes.price}>
-              <Price price={food.price} />
+              <Price price={book.price} />
             </div>
 
             <button onClick={handleAddToCart}>Add To Cart</button>

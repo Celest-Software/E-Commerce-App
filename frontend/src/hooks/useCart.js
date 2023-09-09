@@ -39,31 +39,31 @@ export default function CartProvider({ children }) {
     return items.reduce((prevValue, curValue) => prevValue + curValue, 0);
   };
 
-  const removeFromCart = foodId => {
-    const filteredCartItems = cartItems.filter(item => item.food.id !== foodId);
+  const removeFromCart = bookId => {
+    const filteredCartItems = cartItems.filter(item => item.book.id !== bookId);
     setCartItems(filteredCartItems);
   };
 
   const changeQuantity = (cartItem, newQauntity) => {
-    const { food } = cartItem;
+    const { book } = cartItem;
 
     const changedCartItem = {
       ...cartItem,
       quantity: newQauntity,
-      price: food.price * newQauntity,
+      price: book.price * newQauntity,
     };
 
     setCartItems(
-      cartItems.map(item => (item.food.id === food.id ? changedCartItem : item))
+      cartItems.map(item => (item.book.id === book.id ? changedCartItem : item))
     );
   };
 
-  const addToCart = food => {
-    const cartItem = cartItems.find(item => item.food.id === food.id);
+  const addToCart = book => {
+    const cartItem = cartItems.find(item => item.book.id === book.id);
     if (cartItem) {
       changeQuantity(cartItem, cartItem.quantity + 1);
     } else {
-      setCartItems([...cartItems, { food, quantity: 1, price: food.price }]);
+      setCartItems([...cartItems, { book, quantity: 1, price: book.price }]);
     }
   };
 
