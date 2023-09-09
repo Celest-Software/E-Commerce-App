@@ -1,241 +1,56 @@
-<<<<<<< HEAD
-import { Router } from 'express';
-import jwt from 'jsonwebtoken';
-const router = Router();
-import { BAD_REQUEST } from '../constants/httpStatus.js';
-import handler from 'express-async-handler';
-import { UserModel } from '../models/user.model.js';
-import bcrypt from 'bcryptjs';
-import auth from '../middleware/auth.mid.js';
-const PASSWORD_HASH_SALT_ROUNDS = 10;
+import express from 'express';
+import { createUser, getUserById, updateUser, deleteUser, authenticateUser } from '../controllers/user.controller.js';
 
-router.post(
-  '/login',
-  handler(async (req, res) => {
-    const { email, password } = req.body;
-    const user = await UserModel.findOne({ email });
+const router = express.Router();
 
-    if (user && (await bcrypt.compare(password, user.password))) {
-      res.send(generateTokenResponse(user));
-      return;
-    }
-
-    res.status(BAD_REQUEST).send('Username or password is invalid');
-  })
-);
-
-router.post(
-  '/register',
-  handler(async (req, res) => {
-    const { name, email, password, address } = req.body;
-
-    const user = await UserModel.findOne({ email });
-
-    if (user) {
-      res.status(BAD_REQUEST).send('User already exists, please login!');
-      return;
-    }
-
-    const hashedPassword = await bcrypt.hash(
-      password,
-      PASSWORD_HASH_SALT_ROUNDS
-    );
-
-    const newUser = {
-      name,
-      email: email.toLowerCase(),
-      password: hashedPassword,
-      address,
-    };
-
-    const result = await UserModel.create(newUser);
-    res.send(generateTokenResponse(result));
-  })
-);
-
-router.put(
-  '/updateProfile',
-  auth,
-  handler(async (req, res) => {
-    const { name, address } = req.body;
-    const user = await UserModel.findByIdAndUpdate(
-      req.user.id,
-      { name, address },
-      { new: true }
-    );
-
-    res.send(generateTokenResponse(user));
-  })
-);
-
-router.put(
-  '/changePassword',
-  auth,
-  handler(async (req, res) => {
-    const { currentPassword, newPassword } = req.body;
-    const user = await UserModel.findById(req.user.id);
-
-    if (!user) {
-      res.status(BAD_REQUEST).send('Change Password Failed!');
-      return;
-    }
-
-    const equal = await bcrypt.compare(currentPassword, user.password);
-
-    if (!equal) {
-      res.status(BAD_REQUEST).send('Current Password Is Not Correct!');
-      return;
-    }
-
-    user.password = await bcrypt.hash(newPassword, PASSWORD_HASH_SALT_ROUNDS);
-    await user.save();
-
-    res.send();
-  })
-);
-
-const generateTokenResponse = user => {
-  const token = jwt.sign(
-    {
-      id: user.id,
-      email: user.email,
-      isAdmin: user.isAdmin,
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: '30d',
-    }
-  );
-
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    address: user.address,
-    isAdmin: user.isAdmin,
-    token,
-  };
+// Middleware for error handling
+const asyncHandler = fn => (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-export default router;
-=======
-import { Router } from 'express';
-import jwt from 'jsonwebtoken';
-const router = Router();
-import { BAD_REQUEST } from '../constants/httpStatus.js';
-import handler from 'express-async-handler';
-import { UserModel } from '../models/user.model.js';
-import bcrypt from 'bcryptjs';
-import auth from '../middleware/auth.mid.js';
-const PASSWORD_HASH_SALT_ROUNDS = 10;
+/// Create a new user (Register)
+router.post('/register', asyncHandler(async (req, res) => {
+    const user = await createUser(req.body);
+    // Return only necessary data; avoid exposing sensitive info.
+    res.status(201).json({ id: user.id, email: user.email });
+}));
 
-router.post(
-  '/login',
-  handler(async (req, res) => {
+// Get a user by ID
+router.get('/:id', asyncHandler(async (req, res) => {
+    const user = await getUserById(req.params.id);
+    // Assuming user contains no sensitive data. If it does, filter it out.
+    res.status(200).json(user);
+}));
+
+// Update a user
+router.put('/:id', asyncHandler(async (req, res) => {
+    const user = await updateUser(req.params.id, req.body);
+    // Again, assuming no sensitive data. Filter out if necessary.
+    res.status(200).json(user);
+}));
+
+// Delete a user
+router.delete('/:id', asyncHandler(async (req, res) => {
+    await deleteUser(req.params.id);
+    res.status(204).end();
+}));
+
+// Login
+router.post('/login', asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    const user = await UserModel.findOne({ email });
+    const result = await authenticateUser(email, password);
+    // Send the token and non-sensitive user info.
+    res.status(200).json({ token: result.token, user: { id: result.user.id, email: result.user.email } });
+}));
 
-    if (user && (await bcrypt.compare(password, user.password))) {
-      res.send(generateTokenResponse(user));
-      return;
+// Error handling middleware
+router.use((error, req, res, next) => {
+    console.error(error.message); // Log the error for debugging.
+    if (error.message.includes("Invalid email") || error.message.includes("Invalid Password")) {
+        res.status(401).json({ error: "Invalid credentials" }); // Generalize error for security.
+    } else {
+        res.status(500).json({ error: 'Internal server error' });
     }
-
-    res.status(BAD_REQUEST).send('Username or password is invalid');
-  })
-);
-
-router.post(
-  '/register',
-  handler(async (req, res) => {
-    const { name, email, password, address } = req.body;
-
-    const user = await UserModel.findOne({ email });
-
-    if (user) {
-      res.status(BAD_REQUEST).send('User already exists, please login!');
-      return;
-    }
-
-    const hashedPassword = await bcrypt.hash(
-      password,
-      PASSWORD_HASH_SALT_ROUNDS
-    );
-
-    const newUser = {
-      name,
-      email: email.toLowerCase(),
-      password: hashedPassword,
-      address,
-    };
-
-    const result = await UserModel.create(newUser);
-    res.send(generateTokenResponse(result));
-  })
-);
-
-router.put(
-  '/updateProfile',
-  auth,
-  handler(async (req, res) => {
-    const { name, address } = req.body;
-    const user = await UserModel.findByIdAndUpdate(
-      req.user.id,
-      { name, address },
-      { new: true }
-    );
-
-    res.send(generateTokenResponse(user));
-  })
-);
-
-router.put(
-  '/changePassword',
-  auth,
-  handler(async (req, res) => {
-    const { currentPassword, newPassword } = req.body;
-    const user = await UserModel.findById(req.user.id);
-
-    if (!user) {
-      res.status(BAD_REQUEST).send('Change Password Failed!');
-      return;
-    }
-
-    const equal = await bcrypt.compare(currentPassword, user.password);
-
-    if (!equal) {
-      res.status(BAD_REQUEST).send('Current Password Is Not Correct!');
-      return;
-    }
-
-    user.password = await bcrypt.hash(newPassword, PASSWORD_HASH_SALT_ROUNDS);
-    await user.save();
-
-    res.send();
-  })
-);
-
-const generateTokenResponse = user => {
-  const token = jwt.sign(
-    {
-      id: user.id,
-      email: user.email,
-      isAdmin: user.isAdmin,
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: '30d',
-    }
-  );
-
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    address: user.address,
-    isAdmin: user.isAdmin,
-    token,
-  };
-};
+});
 
 export default router;
->>>>>>> bd25c73570701b2ccdd5741efa034975dd7f58c8

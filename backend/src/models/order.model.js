@@ -1,109 +1,64 @@
-<<<<<<< HEAD
-import { model, Schema } from 'mongoose';
-import { OrderStatus } from '../constants/orderStatus.js';
-import { FoodModel } from './food.model.js';
+import { Model, DataTypes } from 'sequelize';
+import sequelize from './database.js';
 
-export const LatLngSchema = new Schema(
+// Import the User model (adjust the import path as needed)
+import { User } from './user.model.js';
+
+class Order extends Model {}
+
+Order.init(
   {
-    lat: { type: String, required: true },
-    lng: { type: String, required: true },
+    name: DataTypes.STRING,
+    address: DataTypes.STRING,
+    paymentId: DataTypes.STRING,
+    totalPrice: DataTypes.FLOAT,
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: 'NEW', // Default status
+    },
   },
   {
-    _id: false,
-  }
-);
-
-export const OrderItemSchema = new Schema(
-  {
-    food: { type: FoodModel.schema, required: true },
-    price: { type: Number, required: true },
-    quantity: { type: Number, required: true },
-  },
-  {
-    _id: false,
-  }
-);
-
-OrderItemSchema.pre('validate', function (next) {
-  this.price = this.food.price * this.quantity;
-  next();
-});
-
-const orderSchema = new Schema(
-  {
-    name: { type: String, required: true },
-    address: { type: String, required: true },
-    addressLatLng: { type: LatLngSchema, required: true },
-    paymentId: { type: String },
-    totalPrice: { type: Number, required: true },
-    items: { type: [OrderItemSchema], required: true },
-    status: { type: String, default: OrderStatus.NEW },
-    user: { type: Schema.Types.ObjectId, required: true },
-  },
-  {
+    sequelize,
+    modelName: 'order',
     timestamps: true,
-    toJSON: {
-      virtuals: true,
-    },
-    toObject: {
-      virtuals: true,
-    },
   }
 );
 
-export const OrderModel = model('order', orderSchema);
-=======
-import { model, Schema } from 'mongoose';
-import { OrderStatus } from '../constants/orderStatus.js';
-import { FoodModel } from './food.model.js';
+export { Order };
 
-export const LatLngSchema = new Schema(
+// Define the OrderItem and LatLng models
+class OrderItem extends Model {}
+
+OrderItem.init(
   {
-    lat: { type: String, required: true },
-    lng: { type: String, required: true },
+    price: DataTypes.FLOAT,
+    quantity: DataTypes.INTEGER,
   },
   {
-    _id: false,
+    sequelize,
+    modelName: 'orderItem',
   }
 );
 
-export const OrderItemSchema = new Schema(
+export { OrderItem };
+
+class LatLng extends Model {}
+
+LatLng.init(
   {
-    food: { type: FoodModel.schema, required: true },
-    price: { type: Number, required: true },
-    quantity: { type: Number, required: true },
+    lat: DataTypes.STRING,
+    lng: DataTypes.STRING,
   },
   {
-    _id: false,
+    sequelize,
+    modelName: 'latLng',
   }
 );
 
-OrderItemSchema.pre('validate', function (next) {
-  this.price = this.food.price * this.quantity;
-  next();
-});
+export { LatLng };
 
-const orderSchema = new Schema(
-  {
-    name: { type: String, required: true },
-    address: { type: String, required: true },
-    addressLatLng: { type: LatLngSchema, required: true },
-    paymentId: { type: String },
-    totalPrice: { type: Number, required: true },
-    items: { type: [OrderItemSchema], required: true },
-    status: { type: String, default: OrderStatus.NEW },
-    user: { type: Schema.Types.ObjectId, required: true },
-  },
-  {
-    timestamps: true,
-    toJSON: {
-      virtuals: true,
-    },
-    toObject: {
-      virtuals: true,
-    },
-  }
-);
+// Define associations
+Order.hasMany(OrderItem, { as: 'items', foreignKey: 'orderId' });
 
-export const OrderModel = model('order', orderSchema);
->>>>>>> bd25c73570701b2ccdd5741efa034975dd7f58c8
+// Use the imported User model in the association
+Order.belongsTo(User, { foreignKey: 'userId' });
