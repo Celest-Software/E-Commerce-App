@@ -33,7 +33,7 @@ export default function Thumbnails({ books }) {
                     <span key={origin}>{origin}</span>
                   ))}
                 </div>
-                <div className={classes.cook_time}>
+                <div className={classes.read_time}>
                   <span>🕒</span>
                   {book.cookTime}
                 </div>
